@@ -135,7 +135,7 @@ namespace ScreenshotWrapper
                         {
                             // Blit the thing
                             IntPtr hOld = PlatformInvokeGDI32.SelectObject(hMemDC, hBmp);
-                            PlatformInvokeGDI32.BitBlt(hMemDC, 0, 0, width, height, hDC, 0, 0, PlatformInvokeGDI32.SRCCOPY);
+                            PlatformInvokeGDI32.BitBlt(hMemDC, 0, 0, width, height, hDC, rect.left, rect.top, PlatformInvokeGDI32.SRCCOPY);
                             PlatformInvokeGDI32.SelectObject(hMemDC, hOld);
                             success = true;
                         }
@@ -166,14 +166,17 @@ namespace ScreenshotWrapper
                             for (int j = 0; j < bits.Width; ++j)
                             {
                                 // The buffer in .NET is BGR, so flip it to RGB when copying
-                                buffer[i++] = *(scanline + 2);
-                                buffer[i++] = *(scanline + 1);
-                                buffer[i++] = *(scanline);
+                                buffer[i++] = scanline[2];
+                                buffer[i++] = scanline[1];
+                                buffer[i++] = scanline[0];
                                 scanline += 3;
                             }
                             scanline += bits.Stride - bits.Width * 3;
                         }
                     }
+
+                    // Unlock the bits
+                    bmp.UnlockBits(bits);
 
                     // Send it off to Steam
                     ScreenshotHandle hScreenshot = SteamScreenshots.WriteScreenshot(buffer, (uint)buffer.Length, bmp.Width, bmp.Height);
